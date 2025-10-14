@@ -1,6 +1,7 @@
 package main
 
 import (
+	"code"
 	"context"
 	"fmt"
 	"log"
@@ -10,7 +11,18 @@ import (
 )
 
 func GenDiff(ctx context.Context, cmd *cli.Command) error {
-	fmt.Println(cmd.Usage)
+	format := cmd.String("format")
+	if cmd.NArg() > 0 {
+		filepath1 := cmd.Args().Get(0)
+		filepath2 := cmd.Args().Get(1)
+		result, err := code.GenDiff(filepath1, filepath2, format)
+		if err != nil {
+			return err
+		}
+		fmt.Println(result)
+	} else {
+		fmt.Println(cmd.Usage)
+	}
 	return nil
 }
 
