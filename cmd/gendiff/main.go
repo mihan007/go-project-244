@@ -10,9 +10,12 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func GenDiff(ctx context.Context, cmd *cli.Command) error {
+func GenDiff(_ context.Context, cmd *cli.Command) error {
 	format := cmd.String("format")
-	if cmd.NArg() > 0 {
+	if cmd.NArg() == 0 {
+		fmt.Println(cmd.Usage)
+		return nil
+	} else if cmd.NArg() == 2 {
 		filepath1 := cmd.Args().Get(0)
 		filepath2 := cmd.Args().Get(1)
 		result, err := code.GenDiff(filepath1, filepath2, format)
@@ -21,7 +24,7 @@ func GenDiff(ctx context.Context, cmd *cli.Command) error {
 		}
 		fmt.Println(result)
 	} else {
-		fmt.Println(cmd.Usage)
+		return fmt.Errorf("expected 2 arguments, got %d", cmd.NArg())
 	}
 	return nil
 }
