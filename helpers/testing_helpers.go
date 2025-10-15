@@ -1,17 +1,22 @@
-package code
+package helpers
 
 import (
 	"os"
 	"testing"
 )
 
-// createTempJSON creates a temporary JSON file with the given content
-func createTempJSON(t *testing.T, content string) string {
-	return createTempFile(t, "*.json", content)
+// CreateTempJSON creates a temporary JSON file with the given content
+func CreateTempJSON(t *testing.T, content string) string {
+	return CreateTempFile(t, "*.json", content)
 }
 
-// createTempFile creates a temporary file with the given pattern and content
-func createTempFile(t *testing.T, pattern string, content string) string {
+// CreateTempYAML creates a temporary YAML file with the given content
+func CreateTempYAML(t *testing.T, content string) string {
+	return CreateTempFile(t, "*.yaml", content)
+}
+
+// CreateTempFile creates a temporary file with the given pattern and content
+func CreateTempFile(t *testing.T, pattern string, content string) string {
 	t.Helper()
 	tmpFile, err := os.CreateTemp("", pattern)
 	if err != nil {
@@ -36,8 +41,8 @@ func createTempFile(t *testing.T, pattern string, content string) string {
 	return tmpFile.Name()
 }
 
-// deepEqual compares two interface{} values, handling nested maps and slices
-func deepEqual(a, b interface{}) bool {
+// DeepEqual compares two interface{} values, handling nested maps and slices
+func DeepEqual(a, b interface{}) bool {
 	switch aVal := a.(type) {
 	case map[string]interface{}:
 		bVal, ok := b.(map[string]interface{})
@@ -45,7 +50,7 @@ func deepEqual(a, b interface{}) bool {
 			return false
 		}
 		for k, v := range aVal {
-			if !deepEqual(v, bVal[k]) {
+			if !DeepEqual(v, bVal[k]) {
 				return false
 			}
 		}
@@ -56,7 +61,7 @@ func deepEqual(a, b interface{}) bool {
 			return false
 		}
 		for i, v := range aVal {
-			if !deepEqual(v, bVal[i]) {
+			if !DeepEqual(v, bVal[i]) {
 				return false
 			}
 		}

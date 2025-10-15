@@ -3,17 +3,18 @@
 package code
 
 import (
+	"code/parsing"
 	"sort"
 )
 
 // GenDiff compares two configuration files and returns a string representation
 // of the differences. The format parameter controls the output format.
 func GenDiff(filepath1, filepath2, format string) (string, error) {
-	data1, err := parseFile(filepath1)
+	data1, err := parsing.ParseFile(filepath1)
 	if err != nil {
 		return "", err
 	}
-	data2, err := parseFile(filepath2)
+	data2, err := parsing.ParseFile(filepath2)
 	if err != nil {
 		return "", err
 	}
