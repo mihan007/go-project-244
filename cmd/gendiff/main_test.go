@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"code/helpers"
 	"context"
+	"io"
+	"os"
 	"strings"
 	"testing"
 
@@ -157,6 +160,54 @@ func TestGenDiff(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestGenDiffNoArguments(t *testing.T) {
+	// Capture stdout
+	oldStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	cmd := &cli.Command{
+		Name:  "gendiff",
+		Usage: "Compares two configuration files and shows a difference.",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:  "format",
+				Value: "stylish",
+			},
+		},
+		Action: func(ctx context.Context, c *cli.Command) error {
+			return GenDiff(ctx, c)
+		},
+	}
+
+	fullArgs := []string{"gendiff", "--format", "stylish"}
+	err := cmd.Run(context.Background(), fullArgs)
+
+	// Restore stdout
+	errClose := w.Close()
+	if errClose != nil {
+		t.Fatalf("Failed to close stdout pipe: %v", errClose)
+	}
+	os.Stdout = oldStdout
+
+	// Read captured output
+	var buf bytes.Buffer
+	_, errCopy := io.Copy(&buf, r)
+	if errCopy != nil {
+		t.Fatalf("Failed to copy stdout pipe: %v", errCopy)
+	}
+	output := buf.String()
+
+	if err != nil {
+		t.Errorf("GenDiff() with no arguments should not return error, got: %v", err)
+	}
+
+	// Verify that usage information was printed
+	if !strings.Contains(output, "Compares two configuration files") {
+		t.Errorf("Expected usage message to be printed when no arguments provided, got: %s", output)
 	}
 }
 
