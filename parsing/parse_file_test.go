@@ -3,6 +3,9 @@ package parsing
 import (
 	"code/helpers"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseJSON(t *testing.T) {
@@ -54,25 +57,15 @@ func TestParseJSON(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := ParseFile(tt.filepath)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("parseJSON() error = %v, wantErr %v", err, tt.wantErr)
+			if tt.wantErr {
+				require.Error(t, err)
 				return
 			}
-			if !tt.wantErr {
-				if len(got) != len(tt.want) {
-					t.Errorf("parseJSON() returned map with %d keys, want %d", len(got), len(tt.want))
-					return
-				}
-				for k, v := range tt.want {
-					gotV, ok := got[k]
-					if !ok {
-						t.Errorf("parseJSON() missing key %q", k)
-						continue
-					}
-					if !helpers.DeepEqual(gotV, v) {
-						t.Errorf("parseJSON() key %q = %v, want %v", k, gotV, v)
-					}
-				}
+			require.NoError(t, err)
+			assert.Equal(t, len(tt.want), len(got))
+			for k, v := range tt.want {
+				assert.Contains(t, got, k)
+				assert.True(t, helpers.DeepEqual(got[k], v))
 			}
 		})
 	}
@@ -132,25 +125,15 @@ func TestParseYAML(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := ParseFile(tt.filepath)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("parseYAML() error = %v, wantErr %v", err, tt.wantErr)
+			if tt.wantErr {
+				require.Error(t, err)
 				return
 			}
-			if !tt.wantErr {
-				if len(got) != len(tt.want) {
-					t.Errorf("parseYAML() returned map with %d keys, want %d", len(got), len(tt.want))
-					return
-				}
-				for k, v := range tt.want {
-					gotV, ok := got[k]
-					if !ok {
-						t.Errorf("parseYAML() missing key %q", k)
-						continue
-					}
-					if !helpers.DeepEqual(gotV, v) {
-						t.Errorf("parseYAML() key %q = %v, want %v", k, gotV, v)
-					}
-				}
+			require.NoError(t, err)
+			assert.Equal(t, len(tt.want), len(got))
+			for k, v := range tt.want {
+				assert.Contains(t, got, k)
+				assert.True(t, helpers.DeepEqual(got[k], v))
 			}
 		})
 	}

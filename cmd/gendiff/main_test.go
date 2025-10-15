@@ -6,9 +6,10 @@ import (
 	"context"
 	"io"
 	"os"
-	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/urfave/cli/v3"
 )
 
@@ -147,17 +148,14 @@ func TestGenDiff(t *testing.T) {
 			ctx := context.Background()
 			err := cmd.Run(ctx, fullArgs)
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GenDiff() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			// For error cases, check the error message
-			if tt.wantErr && err != nil && len(tt.args) != 2 && len(tt.args) > 0 {
-				expectedErrMsg := "expected 2 arguments"
-				if !strings.Contains(err.Error(), expectedErrMsg) {
-					t.Errorf("GenDiff() error message = %v, should contain %v", err.Error(), expectedErrMsg)
+			if tt.wantErr {
+				require.Error(t, err)
+				// For error cases, check the error message
+				if len(tt.args) != 2 && len(tt.args) > 0 {
+					assert.Contains(t, err.Error(), "expected 2 arguments")
 				}
+			} else {
+				require.NoError(t, err)
 			}
 		})
 	}
@@ -188,27 +186,17 @@ func TestGenDiffNoArguments(t *testing.T) {
 
 	// Restore stdout
 	errClose := w.Close()
-	if errClose != nil {
-		t.Fatalf("Failed to close stdout pipe: %v", errClose)
-	}
+	require.NoError(t, errClose, "Failed to close stdout pipe")
 	os.Stdout = oldStdout
 
 	// Read captured output
 	var buf bytes.Buffer
 	_, errCopy := io.Copy(&buf, r)
-	if errCopy != nil {
-		t.Fatalf("Failed to copy stdout pipe: %v", errCopy)
-	}
+	require.NoError(t, errCopy, "Failed to copy stdout pipe")
 	output := buf.String()
 
-	if err != nil {
-		t.Errorf("GenDiff() with no arguments should not return error, got: %v", err)
-	}
-
-	// Verify that usage information was printed
-	if !strings.Contains(output, "Compares two configuration files") {
-		t.Errorf("Expected usage message to be printed when no arguments provided, got: %s", output)
-	}
+	require.NoError(t, err, "GenDiff() with no arguments should not return error")
+	assert.Contains(t, output, "Compares two configuration files")
 }
 
 func TestGenDiffWithFlags(t *testing.T) {
@@ -259,8 +247,10 @@ func TestGenDiffWithFlags(t *testing.T) {
 
 			fullArgs := []string{"gendiff", "--format", tt.formatFlag, tt.file1, tt.file2}
 			err := cmd.Run(context.Background(), fullArgs)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GenDiff() with format flag error = %v, wantErr %v", err, tt.wantErr)
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
 			}
 		})
 	}
@@ -319,8 +309,10 @@ func TestGenDiffEdgeCases(t *testing.T) {
 
 			fullArgs := []string{"gendiff", "--format", tt.format, file1, file2}
 			err := cmd.Run(context.Background(), fullArgs)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GenDiff() error = %v, wantErr %v", err, tt.wantErr)
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
 			}
 		})
 	}

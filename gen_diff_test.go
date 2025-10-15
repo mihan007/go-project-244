@@ -3,6 +3,9 @@ package code
 import (
 	"code/helpers"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGenDiffJSON(t *testing.T) {
@@ -96,13 +99,12 @@ func TestGenDiffJSON(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := GenDiff(tt.file1, tt.file2, tt.format)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GenDiff() error = %v, wantErr %v", err, tt.wantErr)
+			if tt.wantErr {
+				require.Error(t, err)
 				return
 			}
-			if !tt.wantErr && got != tt.want {
-				t.Errorf("GenDiff() =\n%v\nwant:\n%v", got, tt.want)
-			}
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -184,13 +186,12 @@ func TestGenDiffYAML(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := GenDiff(tt.filepath1, tt.filepath2, tt.format)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GenDiff() error = %v, wantErr %v", err, tt.wantErr)
+			if tt.wantErr {
+				require.Error(t, err)
 				return
 			}
-			if !tt.wantErr && got != tt.want {
-				t.Errorf("GenDiff() got:\n%s\nwant:\n%s", got, tt.want)
-			}
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -288,23 +289,12 @@ func TestComputeDiff(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := computeDiff(tt.data1, tt.data2)
-			if len(got) != len(tt.want) {
-				t.Errorf("computeDiff() returned %d entries, want %d", len(got), len(tt.want))
-				return
-			}
+			require.Equal(t, len(tt.want), len(got))
 			for i, entry := range got {
-				if entry.Key != tt.want[i].Key {
-					t.Errorf("Entry %d: Key = %v, want %v", i, entry.Key, tt.want[i].Key)
-				}
-				if entry.Status != tt.want[i].Status {
-					t.Errorf("Entry %d: Status = %v, want %v", i, entry.Status, tt.want[i].Status)
-				}
-				if entry.OldVal != tt.want[i].OldVal {
-					t.Errorf("Entry %d: OldVal = %v, want %v", i, entry.OldVal, tt.want[i].OldVal)
-				}
-				if entry.NewVal != tt.want[i].NewVal {
-					t.Errorf("Entry %d: NewVal = %v, want %v", i, entry.NewVal, tt.want[i].NewVal)
-				}
+				assert.Equal(t, tt.want[i].Key, entry.Key)
+				assert.Equal(t, tt.want[i].Status, entry.Status)
+				assert.Equal(t, tt.want[i].OldVal, entry.OldVal)
+				assert.Equal(t, tt.want[i].NewVal, entry.NewVal)
 			}
 		})
 	}
