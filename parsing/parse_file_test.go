@@ -8,6 +8,29 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func testIt(t *testing.T, tests []struct {
+	name     string
+	filepath string
+	want     map[string]interface{}
+	wantErr  bool
+}) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseFile(tt.filepath)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, len(tt.want), len(got))
+			for k, v := range tt.want {
+				assert.Contains(t, got, k)
+				assert.True(t, helpers.DeepEqual(got[k], v))
+			}
+		})
+	}
+}
+
 func TestParseJSON(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -54,21 +77,7 @@ func TestParseJSON(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseFile(tt.filepath)
-			if tt.wantErr {
-				require.Error(t, err)
-				return
-			}
-			require.NoError(t, err)
-			assert.Equal(t, len(tt.want), len(got))
-			for k, v := range tt.want {
-				assert.Contains(t, got, k)
-				assert.True(t, helpers.DeepEqual(got[k], v))
-			}
-		})
-	}
+	testIt(t, tests)
 }
 
 func TestParseYAML(t *testing.T) {
@@ -117,19 +126,5 @@ func TestParseYAML(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseFile(tt.filepath)
-			if tt.wantErr {
-				require.Error(t, err)
-				return
-			}
-			require.NoError(t, err)
-			assert.Equal(t, len(tt.want), len(got))
-			for k, v := range tt.want {
-				assert.Contains(t, got, k)
-				assert.True(t, helpers.DeepEqual(got[k], v))
-			}
-		})
-	}
+	testIt(t, tests)
 }
