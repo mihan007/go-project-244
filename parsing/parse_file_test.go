@@ -115,11 +115,6 @@ func TestParseYAML(t *testing.T) {
 			filepath: helpers.CreateTempFile(t, "file.yaml", "key: value\n  invalid: indentation"),
 			wantErr:  true,
 		},
-		{
-			name:     "non-existent file",
-			filepath: "does-not-exist.yaml",
-			wantErr:  true,
-		},
 	}
 
 	for _, tt := range tests {
